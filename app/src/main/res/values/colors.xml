@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="colorPrimary">#f1e4d2</color>
+    <color name="hintColor">#6289b8</color>
+
+    <!-- Background -->
+    <color name="background_light">#F5F5F5</color>
+
+    <!-- Surfaces / Cards -->
+    <color name="surface_beige">#E0D9C5</color>
+
+    <!-- Secondary Accent -->
+    <color name="taupe">#C0B2A7</color>
+
+    <!-- Secondary Text / Disabled -->
+    <color name="gray_medium">#AFAFAF</color>
+
+    <!-- Primary Text / FAB -->
+    <color name="gray_dark">#6A6A6A</color>
+
+    <!-- FAB Icon -->
+    <color name="fab_icon">#F5F5F5</color>
+
+    <color name="selectionColor">#E3F2FD</color>
+</resources>
