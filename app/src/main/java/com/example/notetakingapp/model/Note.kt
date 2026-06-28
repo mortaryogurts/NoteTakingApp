@@ -13,5 +13,7 @@ data class Note(
     val id : Int,
     val noteTitle : String,
     val noteBody : String,
-    val isPinned : Boolean
+    val isPinned : Boolean,
+    val isArchived : Boolean,
+    val deletedAt : Long? = null
 ): Parcelable

@@ -58,6 +58,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:${lifecycle_version}")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${lifecycle_version}")
     kapt("androidx.lifecycle:lifecycle-compiler:$lifecycle_version")
+
+    //WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     //Default
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
@@ -67,5 +71,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+
 
 }

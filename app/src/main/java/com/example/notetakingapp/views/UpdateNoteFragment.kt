@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.notetakingapp.R
 import com.example.notetakingapp.databinding.FragmentUpdateNoteBinding
@@ -57,7 +58,7 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
             val title = binding.etNoteTitleUpdate.text.toString().trim()
             val body = binding.etNoteBodyUpdate.text.toString().trim()
             if(title.isNotEmpty()){
-                val note = Note(currentNote.id, title, body, false)
+                val note = Note(currentNote.id, title, body, currentNote.isPinned, currentNote.isArchived)
                 notesViewModel.updateNote(note)
                 view.findNavController().navigate(R.id.action_updateNoteFragment_to_homeFragment)
             }else{
@@ -97,6 +98,18 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
                 }else{
                     Toast.makeText(context, "Note Unpinned", Toast.LENGTH_SHORT).show()
                 }
+            }
+            R.id.menu_archive -> {
+                notesViewModel.archiveNote(currentNote.id)
+                findNavController().navigate(R.id.action_updateNoteFragment_to_homeFragment)
+                Toast.makeText(context, "Note Archived", Toast.LENGTH_SHORT).show()
+
+            }
+            R.id.menu_move_to_trash -> {
+                notesViewModel.moveToTrash(currentNote.id)
+                findNavController().navigate(R.id.action_updateNoteFragment_to_homeFragment)
+                Toast.makeText(context, "Note Moved to Trash", Toast.LENGTH_SHORT).show()
+
             }
         }
 

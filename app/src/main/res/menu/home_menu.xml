@@ -9,7 +9,7 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_delete"
-        android:icon="@drawable/ic_delete"
+        android:icon="@drawable/ic_bin"
         android:title="Delete"
         android:visible="false"
         app:showAsAction="ifRoom" />
@@ -19,4 +19,17 @@
         android:title="Search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_archive"
+        android:title="Archive"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_trash"
+        android:title="Trash"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_toggle_list_view"
+        android:title="Grid Layout"
+        app:showAsAction="never" />
 </menu>

@@ -54,7 +54,7 @@ class NewNoteFragment : Fragment(R.layout.fragment_new_note) {
         val noteBody = binding.etNoteBody.text.toString().trim()
 
         if (noteTitle.isNotEmpty()) {
-            val note = Note(0, noteTitle, noteBody, false)
+            val note = Note(0, noteTitle, noteBody, isPinned = false, isArchived = false)
             notesViewModel.addNote(note)
             Snackbar.make(view, "Note Saved Successfully", Snackbar.LENGTH_SHORT).show()
             view.findNavController().navigate(R.id.action_newNoteFragment_to_homeFragment)

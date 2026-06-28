@@ -20,11 +20,11 @@ interface NoteDAO {
     @Delete
     suspend fun deleteNote(note : Note)
 
-    @Query("SELECT * FROM notes ORDER BY isPinned DESC, id DESC")
+    @Query("SELECT * FROM notes WHERE isArchived = 0 AND deletedAt IS NULL ORDER BY isPinned DESC, id DESC")
     fun getAllNotes() : LiveData<List<Note>>
 
-    @Query("SELECT * FROM notes where noteTitle like '%' || :query || '%' OR noteBody LIKE '%' || :query || '%'")
-    fun searchNote(query: String?) : LiveData<List<Note>>
+    @Query("SELECT * FROM notes WHERE (noteTitle LIKE '%' || :query || '%' OR noteBody LIKE '%' || :query || '%') AND isArchived = 0 AND deletedAt IS NULL ORDER BY isPinned DESC, id DESC")
+    fun searchNotes(query: String): LiveData<List<Note>>
 
     @Query("UPDATE notes SET isPinned = NOT isPinned WHERE id = :noteId")
     suspend fun togglePinnedStatus(noteId: Int)
@@ -34,4 +34,44 @@ interface NoteDAO {
 
     @Query("UPDATE notes SET isPinned = :isPinned WHERE id = :noteId")
     suspend fun setPinnedStatus(noteId: Int, isPinned: Boolean)
+
+    @Query("DELETE FROM notes WHERE deletedAt IS NOT NULL AND deletedAt < :cutoff")
+    suspend fun deleteNotesOlderThan(cutoff: Long)
+
+    @Query("SELECT * FROM notes WHERE isArchived = 1 AND deletedAt IS NULL ORDER BY id DESC")
+    fun getArchivedNotes() : LiveData<List<Note>>
+
+    @Query("UPDATE notes SET isArchived = 1 WHERE id = :noteId")
+    suspend fun archiveNote(noteId: Int)
+    @Query("UPDATE notes SET isArchived = 0 WHERE id = :noteId")
+    suspend fun unArchiveNote(noteId : Int)
+
+    @Query("SELECT * FROM notes WHERE deletedAt IS NOT NULL ORDER BY deletedAt DESC")
+    fun getTrashedNotes() : LiveData<List<Note>>
+
+    @Query("UPDATE notes SET deletedAt = :timeStamp WHERE id = :noteId")
+    suspend fun moveToTrash(noteId : Int, timeStamp : Long)
+
+    @Query("UPDATE notes SET deletedAt = NULL WHERE id = :noteId")
+    suspend fun restoreFromTrash(noteId: Int)
+
+    @Query("DELETE FROM notes WHERE id = :noteId")
+    suspend fun permanentlyDelete(noteId: Int)
+
+    @Query("DELETE FROM notes WHERE deletedAt IS NOT NULL AND deletedAt < :cutoff")
+    suspend fun deleteOldTrashedNotes(cutoff: Long)
+    @Query("UPDATE notes SET isArchived = 1 WHERE id IN (:noteIds)")
+    suspend fun archiveNotes(noteIds: List<Int>)
+
+    @Query("UPDATE notes SET isArchived = 0 WHERE id IN (:noteIds)")
+    suspend fun unArchiveNotes(noteIds: List<Int>)
+
+    @Query("UPDATE notes SET deletedAt = :timeStamp WHERE id IN (:noteIds)")
+    suspend fun moveNotesToTrash(noteIds: List<Int>, timeStamp: Long)
+
+    @Query("UPDATE notes SET deletedAt = NULL WHERE id IN (:noteIds)")
+    suspend fun restoreNotesFromTrash(noteIds: List<Int>)
+
+    @Query("DELETE FROM notes WHERE id IN (:noteIds)")
+    suspend fun permanentlyDeleteNotes(noteIds: List<Int>)
 }

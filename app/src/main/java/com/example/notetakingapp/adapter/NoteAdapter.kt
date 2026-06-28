@@ -4,23 +4,25 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.example.notetakingapp.R
 import com.example.notetakingapp.views.HomeFragmentDirections
 import com.example.notetakingapp.databinding.NoteLayoutBinding
 import com.example.notetakingapp.model.Note
 import kotlin.random.Random
 
+
+
+
 class NoteAdapter : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
-    inner class NoteViewHolder(val itemBinding: NoteLayoutBinding) :
-        RecyclerView.ViewHolder(itemBinding.root) {
 
-    }
-
+    inner class NoteViewHolder(val itemBinding : NoteLayoutBinding) : RecyclerView.ViewHolder(itemBinding.root)
     var onSelectionChanged: (() -> Unit)? = null
     private val selectedNotes = mutableSetOf<Int>()
 
@@ -45,8 +47,8 @@ class NoteAdapter : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
 
     //only updates those items in the recycler view that have changed and not all the items
-    //using notifyDataSetChanged() makes the app redrqaw the list every time the list changes
-    //this checks whether the items have changed and only updates those items in the list which is better for the ui
+//using notifyDataSetChanged() makes the app redrqaw the list every time the list changes
+//this checks whether the items have changed and only updates those items in the list which is better for the ui
     private val differCallback = object : DiffUtil.ItemCallback<Note>() {
         override fun areItemsTheSame(oldItem: Note, newItem: Note): Boolean {
             return oldItem.id == newItem.id &&

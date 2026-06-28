@@ -39,4 +39,20 @@
             app:argType="com.example.notetakingapp.model.Note"
             app:nullable="true"/>
     </fragment>
+    <fragment
+        android:id="@+id/archiveFragment"
+        android:name="com.example.notetakingapp.views.ArchiveFragment"
+        android:label="fragment_archive"
+        tools:layout="@layout/fragment_archive" />
+    <action
+        android:id="@+id/action_homeFragment_to_archiveFragment"
+        app:destination="@id/archiveFragment"/>
+    <fragment
+        android:id="@+id/trashFragment"
+        android:name="com.example.notetakingapp.views.TrashFragment"
+        android:label="fragment_trash"
+        tools:layout="@layout/fragment_trash" />
+    <action
+        android:id="@+id/action_homeFragment_to_trashFragment"
+        app:destination="@id/trashFragment"/>
 </navigation>

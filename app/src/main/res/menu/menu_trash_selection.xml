@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_restore"
+        android:title="Restore"
+        android:icon="@drawable/ic_restore"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_permanently_delete"
+        android:title="Delete Permanently"
+        android:icon="@drawable/ic_bin"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_archive"
+        android:title="Archive"
+        android:icon="@drawable/ic_archive"
+        app:showAsAction="ifRoom" />
+</menu>

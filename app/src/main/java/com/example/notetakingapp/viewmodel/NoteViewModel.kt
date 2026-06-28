@@ -15,8 +15,20 @@ import kotlinx.coroutines.launch
 class NoteViewModel(private val repo: NoteRepository, app: Application) : AndroidViewModel(app) {
 
 
-    private val searchQuery : MutableLiveData<String> = MutableLiveData<String>("")
+   
+    
+    private val sharedPrefs = app.getSharedPreferences("note_prefs", android.content.Context.MODE_PRIVATE)
+    
+    private val _spanCount = MutableLiveData(sharedPrefs.getInt("span_count", 2))
+    val spanCount : LiveData<Int> = _spanCount
 
+    fun toggleSpanCount() {
+        val newCount = if (_spanCount.value == 2) 1 else 2
+        _spanCount.value = newCount
+        sharedPrefs.edit().putInt("span_count", newCount).apply()
+    }
+
+    private val searchQuery : MutableLiveData<String> = MutableLiveData<String>("")
     val notes : LiveData<List<Note>> = searchQuery.switchMap { query ->
         if(query.isNullOrEmpty()){
             repo.getAllNotes()
@@ -76,4 +88,72 @@ class NoteViewModel(private val repo: NoteRepository, app: Application) : Androi
             }
         }
     }
+    fun deleteNotesOlderThan(cutoff: Long) {
+        viewModelScope.launch {
+            repo.deleteNotesOlderThan(cutoff)
+        }
+    }
+
+    val archivedNotes : LiveData<List<Note>> = repo.getArchivedNotes()
+
+    fun archiveNote(noteId : Int) {
+        viewModelScope.launch {
+            repo.archiveNote(noteId)
+        }
+    }
+    fun archiveNotes(noteIds: Set<Int>) {
+        viewModelScope.launch {
+            repo.archiveNotes(noteIds.toList())
+        }
+    }
+    fun unArchiveNote(noteId : Int){
+        viewModelScope.launch {
+            repo.unarchiveNote(noteId)
+        }
+    }
+    fun unArchiveNotes(noteIds: Set<Int>) {
+        viewModelScope.launch {
+            repo.unarchiveNotes(noteIds.toList())
+        }
+    }
+
+    val trashedNotes : LiveData<List<Note>> = repo.getTrashedNotes()
+
+    fun moveToTrash(noteId : Int){
+        viewModelScope.launch {
+            repo.moveToTrash(noteId)
+        }
+    }
+    fun moveNotesToTrash(noteIds: Set<Int>) {
+        viewModelScope.launch {
+            repo.moveNotesToTrash(noteIds.toList())
+        }
+    }
+    fun restoreFromTrash(noteId : Int){
+        viewModelScope.launch {
+            repo.restoreFromTrash(noteId)
+        }
+    }
+    fun restoreNotesFromTrash(noteIds: Set<Int>) {
+        viewModelScope.launch {
+            repo.restoreNotesFromTrash(noteIds.toList())
+        }
+    }
+
+    fun permanentlyDelete(noteId : Int){
+        viewModelScope.launch {
+            repo.permanentlyDelete(noteId)
+        }
+    }
+    fun permanentlyDeleteNotes(noteIds: Set<Int>) {
+        viewModelScope.launch {
+            repo.permanentlyDeleteNotes(noteIds.toList())
+        }
+    }
+    fun deleteOldTrashedNotes(){
+        viewModelScope.launch {
+            repo.deleteOldTrashedNotes()
+        }
+    }
+
 }
