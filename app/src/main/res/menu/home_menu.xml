@@ -32,4 +32,43 @@
         android:id="@+id/menu_toggle_list_view"
         android:title="Grid Layout"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_sort"
+        android:title="Sort By"
+        app:showAsAction="never">
+
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/sort_created_desc"
+                    android:title="Date Created (Newest)"
+                    android:checkable="true"/>
+
+                <item
+                    android:id="@+id/sort_created_asc"
+                    android:title="Date Created (Oldest)"
+                    android:checkable="true"/>
+
+                <item
+                    android:id="@+id/sort_updated_desc"
+                    android:title="Date Modified (Newest)"
+                    android:checkable="true"/>
+
+                <item
+                    android:id="@+id/sort_updated_asc"
+                    android:title="Date Modified (Oldest)"
+                    android:checkable="true"/>
+
+                <item
+                    android:id="@+id/sort_title_asc"
+                    android:title="Title (A - Z)"
+                    android:checkable="true"/>
+
+                <item
+                    android:id="@+id/sort_title_desc"
+                    android:title="Title (Z - A)"
+                    android:checkable="true"/>
+            </group>
+        </menu>
+    </item>
 </menu>

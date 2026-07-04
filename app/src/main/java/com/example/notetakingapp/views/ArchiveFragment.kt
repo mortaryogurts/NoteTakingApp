@@ -132,9 +132,10 @@ class ArchiveFragment : Fragment(R.layout.fragment_archive) {
         } else {
             inflater.inflate(R.menu.menu_archive, menu)
             toolbar?.title = "Archive"
-            toolbar?.setNavigationIcon(R.drawable.ic_cancel) // assuming this is used for back too?
-            // Actually HomeFragment doesn't set back icon, usually handled by NavController
-            toolbar?.navigationIcon = null 
+            toolbar?.setNavigationIcon(R.drawable.ic_note) // Using ic_note as drawer icon
+            toolbar?.setNavigationOnClickListener {
+                mainActivity?.binding?.drawerLayout?.openDrawer(androidx.core.view.GravityCompat.START)
+            }
             toolbar?.setBackgroundColor(resources.getColor(R.color.background_light, null))
 
             val toggleItem = menu.findItem(R.id.menu_toggle_list_view)

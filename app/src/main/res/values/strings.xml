@@ -5,4 +5,6 @@
     <string name="image">image</string>
     <string name="type_your_title">Type your Title</string>
     <string name="type_something">Type Something...</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 </resources>

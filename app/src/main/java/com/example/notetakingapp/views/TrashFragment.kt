@@ -153,7 +153,10 @@ class TrashFragment : Fragment(R.layout.fragment_trash) {
         } else {
             inflater.inflate(R.menu.trash_menu, menu)
             toolbar?.title = "Trash"
-            toolbar?.navigationIcon = null
+            toolbar?.setNavigationIcon(R.drawable.ic_note)
+            toolbar?.setNavigationOnClickListener {
+                mainActivity?.binding?.drawerLayout?.openDrawer(androidx.core.view.GravityCompat.START)
+            }
             toolbar?.setBackgroundColor(resources.getColor(R.color.background_light, null))
 
             val toggleItem = menu.findItem(R.id.menu_toggle_list_view)

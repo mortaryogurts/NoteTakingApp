@@ -74,4 +74,28 @@ interface NoteDAO {
 
     @Query("DELETE FROM notes WHERE id IN (:noteIds)")
     suspend fun permanentlyDeleteNotes(noteIds: List<Int>)
+
+    // Sort by date created
+    @Query("SELECT * FROM notes WHERE isArchived = 0 AND deletedAt IS NULL ORDER BY isPinned DESC, createdAt DESC")
+    fun getNotesSortedByCreatedDesc(): LiveData<List<Note>>
+
+    @Query("SELECT * FROM notes WHERE isArchived = 0 AND deletedAt IS NULL ORDER BY isPinned DESC, createdAt ASC")
+    fun getNotesSortedByCreatedAsc(): LiveData<List<Note>>
+
+    // Sort by date modified
+    @Query("SELECT * FROM notes WHERE isArchived = 0 AND deletedAt IS NULL ORDER BY isPinned DESC, updatedAt DESC")
+    fun getNotesSortedByUpdatedDesc(): LiveData<List<Note>>
+
+    @Query("SELECT * FROM notes WHERE isArchived = 0 AND deletedAt IS NULL ORDER BY isPinned DESC, updatedAt ASC")
+    fun getNotesSortedByUpdatedAsc(): LiveData<List<Note>>
+
+    // Sort alphabetically
+    @Query("SELECT * FROM notes WHERE isArchived = 0 AND deletedAt IS NULL ORDER BY isPinned DESC, noteTitle ASC")
+    fun getNotesSortedByTitleAsc(): LiveData<List<Note>>
+
+    @Query("SELECT * FROM notes WHERE isArchived = 0 AND deletedAt IS NULL ORDER BY isPinned DESC, noteTitle DESC")
+    fun getNotesSortedByTitleDesc(): LiveData<List<Note>>
+
+    @Query("SELECT * FROM notes WHERE categoryId = :categoryId AND isArchived = 0 AND deletedAt IS NULL ORDER BY isPinned DESC, createdAt DESC")
+    fun getNotesByCategory(categoryId: Int): LiveData<List<Note>>
 }

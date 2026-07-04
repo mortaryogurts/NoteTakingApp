@@ -12,15 +12,24 @@ import com.example.notetakingapp.model.Note
 import com.example.notetakingapp.repository.NoteRepository
 import kotlinx.coroutines.launch
 
+
+enum class SortOrder {
+    DATE_CREATED_ASC,
+    DATE_CREATED_DESC,
+    DATE_UPDATED_ASC,
+    DATE_UPDATED_DESC,
+    TITLE_ASC,
+    TITLE_DESC
+}
+
 class NoteViewModel(private val repo: NoteRepository, app: Application) : AndroidViewModel(app) {
 
 
-   
-    
-    private val sharedPrefs = app.getSharedPreferences("note_prefs", android.content.Context.MODE_PRIVATE)
-    
+    private val sharedPrefs =
+        app.getSharedPreferences("note_prefs", android.content.Context.MODE_PRIVATE)
+
     private val _spanCount = MutableLiveData(sharedPrefs.getInt("span_count", 2))
-    val spanCount : LiveData<Int> = _spanCount
+    val spanCount: LiveData<Int> = _spanCount
 
     fun toggleSpanCount() {
         val newCount = if (_spanCount.value == 2) 1 else 2
@@ -28,14 +37,44 @@ class NoteViewModel(private val repo: NoteRepository, app: Application) : Androi
         sharedPrefs.edit().putInt("span_count", newCount).apply()
     }
 
-    private val searchQuery : MutableLiveData<String> = MutableLiveData<String>("")
-    val notes : LiveData<List<Note>> = searchQuery.switchMap { query ->
-        if(query.isNullOrEmpty()){
-            repo.getAllNotes()
-        }else{
+    private val _sortOrder = MutableLiveData<SortOrder>(SortOrder.DATE_CREATED_DESC)
+    val sortOrder: LiveData<SortOrder> = _sortOrder
+
+    private val _selectedCategory = MutableLiveData<Int?>(null)
+    val selectedCategory: LiveData<Int?> = _selectedCategory
+
+    fun setSelectedCategory(categoryId: Int?) {
+        _selectedCategory.value = categoryId
+    }
+
+    private val searchQuery: MutableLiveData<String> = MutableLiveData<String>("")
+    val notes: LiveData<List<Note>> = searchQuery.switchMap { query ->
+        if (query.isNullOrEmpty()) {
+            selectedCategory.switchMap { categoryId ->
+                if (categoryId == null) {
+                    _sortOrder.switchMap { order ->
+                        when (order) {
+                            SortOrder.DATE_CREATED_ASC -> repo.getNotesSortedByCreatedAsc()
+                            SortOrder.DATE_CREATED_DESC -> repo.getNotesSortedByCreatedDesc()
+                            SortOrder.DATE_UPDATED_ASC -> repo.getNotesSortedByUpdatedAsc()
+                            SortOrder.DATE_UPDATED_DESC -> repo.getNotesSortedByUpdatedDesc()
+                            SortOrder.TITLE_ASC -> repo.getNotesSortedByTitleAsc()
+                            SortOrder.TITLE_DESC -> repo.getNotesSortedByTitleDesc()
+                        }
+                    }
+                } else {
+                    repo.getNotesByCategory(categoryId)
+                }
+            }
+        } else {
             repo.searchNotes(query)
         }
     }
+
+    fun setSortOrder(order: SortOrder) {
+        _sortOrder.value = order
+    }
+
     fun addNote(note: Note) =
         viewModelScope.launch {
             repo.insertNote(note)
@@ -52,7 +91,7 @@ class NoteViewModel(private val repo: NoteRepository, app: Application) : Androi
         }
 
     fun getAllNotes() = repo.getAllNotes()
-    fun searchNotes(query: String){
+    fun searchNotes(query: String) {
         searchQuery.value = query
     }
 
@@ -61,7 +100,7 @@ class NoteViewModel(private val repo: NoteRepository, app: Application) : Androi
         repo.togglePin(noteId)
     }
 
-    fun pinNotes(noteIds : Set<Int>){
+    fun pinNotes(noteIds: Set<Int>) {
         viewModelScope.launch {
             val selectedNotes = repo.getNotesByIds(noteIds.toList())
             val hasUnpinned = selectedNotes.any { !it.isPinned }
@@ -88,69 +127,78 @@ class NoteViewModel(private val repo: NoteRepository, app: Application) : Androi
             }
         }
     }
+
     fun deleteNotesOlderThan(cutoff: Long) {
         viewModelScope.launch {
             repo.deleteNotesOlderThan(cutoff)
         }
     }
 
-    val archivedNotes : LiveData<List<Note>> = repo.getArchivedNotes()
+    val archivedNotes: LiveData<List<Note>> = repo.getArchivedNotes()
 
-    fun archiveNote(noteId : Int) {
+    fun archiveNote(noteId: Int) {
         viewModelScope.launch {
             repo.archiveNote(noteId)
         }
     }
+
     fun archiveNotes(noteIds: Set<Int>) {
         viewModelScope.launch {
             repo.archiveNotes(noteIds.toList())
         }
     }
-    fun unArchiveNote(noteId : Int){
+
+    fun unArchiveNote(noteId: Int) {
         viewModelScope.launch {
             repo.unarchiveNote(noteId)
         }
     }
+
     fun unArchiveNotes(noteIds: Set<Int>) {
         viewModelScope.launch {
             repo.unarchiveNotes(noteIds.toList())
         }
     }
 
-    val trashedNotes : LiveData<List<Note>> = repo.getTrashedNotes()
+    val trashedNotes: LiveData<List<Note>> = repo.getTrashedNotes()
 
-    fun moveToTrash(noteId : Int){
+    fun moveToTrash(noteId: Int) {
         viewModelScope.launch {
             repo.moveToTrash(noteId)
         }
     }
+
     fun moveNotesToTrash(noteIds: Set<Int>) {
         viewModelScope.launch {
             repo.moveNotesToTrash(noteIds.toList())
         }
     }
-    fun restoreFromTrash(noteId : Int){
+
+    fun restoreFromTrash(noteId: Int) {
         viewModelScope.launch {
             repo.restoreFromTrash(noteId)
         }
     }
+
     fun restoreNotesFromTrash(noteIds: Set<Int>) {
         viewModelScope.launch {
             repo.restoreNotesFromTrash(noteIds.toList())
         }
     }
 
-    fun permanentlyDelete(noteId : Int){
+    fun permanentlyDelete(noteId: Int) {
         viewModelScope.launch {
             repo.permanentlyDelete(noteId)
         }
     }
+
     fun permanentlyDeleteNotes(noteIds: Set<Int>) {
         viewModelScope.launch {
             repo.permanentlyDeleteNotes(noteIds.toList())
         }
     }
-    fun deleteOldTrashedNotes(){
+
+    fun deleteOldTrashedNotes() {
         viewModelScope.launch {
             repo.deleteOldTrashedNotes()
         }

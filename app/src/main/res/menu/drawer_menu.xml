@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_all_notes"
+            android:title="All Notes"
+            android:icon="@drawable/ic_note"/>
+
+        <item
+            android:id="@+id/nav_archive"
+            android:title="Archive"
+            android:icon="@drawable/ic_archive"/>
+
+        <item
+            android:id="@+id/nav_trash"
+            android:title="Trash"
+            android:icon="@drawable/ic_trash"/>
+        <item
+            android:id="@+id/nav_add_category"
+            android:title="New Category"
+            app:showAsAction="never"/>
+
+
+
+    </group>
+
+    <!-- categories will be added dynamically in MainActivity -->
+    <group
+        android:id="@+id/group_categories"
+        android:checkableBehavior="single"/>
+
+</menu>

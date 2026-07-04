@@ -1,4 +1,4 @@
-# NoteTakingApp
+z   # NoteTakingApp
 
 A modern, feature-rich Android note-taking application built with Kotlin and Jetpack components.
 

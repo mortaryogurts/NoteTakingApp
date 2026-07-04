@@ -20,6 +20,7 @@ import com.example.notetakingapp.adapter.NoteAdapter
 import com.example.notetakingapp.databinding.FragmentHomeBinding
 import com.example.notetakingapp.model.Note
 import com.example.notetakingapp.viewmodel.NoteViewModel
+import com.example.notetakingapp.viewmodel.SortOrder
 import com.google.android.material.snackbar.Snackbar
 
 class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextListener {
@@ -30,10 +31,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
     private lateinit var notesViewModel: NoteViewModel
     private lateinit var noteAdapter: NoteAdapter
 
-    // Removed local col variable
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -42,7 +39,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -51,14 +47,10 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
         super.onViewCreated(view, savedInstanceState)
         notesViewModel = (activity as MainActivity).noteViewModel
 
-
         setUpRecyclerView()
         binding.fabAddButton.setOnClickListener {
             it.findNavController().navigate(R.id.action_homeFragment_to_newNoteFragment)
         }
-
-        val actionBar = (activity as? AppCompatActivity)?.supportActionBar
-        actionBar?.title = "Selected: ${noteAdapter.getSelectedNotes().size}"
 
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
@@ -75,14 +67,12 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
 
                 when (direction) {
                     ItemTouchHelper.RIGHT -> {
-                        // swipe right → archive
                         notesViewModel.archiveNote(note.id)
                         showUndoSnackbar("Note archived") {
                             notesViewModel.unArchiveNote(note.id)
                         }
                     }
                     ItemTouchHelper.LEFT -> {
-                        // swipe left → trash
                         notesViewModel.moveToTrash(note.id)
                         showUndoSnackbar("Note moved to trash") {
                             notesViewModel.restoreFromTrash(note.id)
@@ -93,7 +83,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
         })
 
         itemTouchHelper.attachToRecyclerView(binding.recyclerView)
-
     }
 
     private fun setUpRecyclerView() {
@@ -114,35 +103,37 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
             requireActivity().invalidateOptionsMenu()
         }
 
-        activity?.let {
-
-            notesViewModel.notes.observe(viewLifecycleOwner) { note ->
-                noteAdapter.differ.submitList(note)
-                updateUI(note)
-            }
+        notesViewModel.sortOrder.observe(viewLifecycleOwner) {
+            requireActivity().invalidateOptionsMenu()
         }
 
+        notesViewModel.notes.observe(viewLifecycleOwner) { note ->
+            noteAdapter.differ.submitList(note)
+            updateUI(note)
+        }
     }
 
     private fun updateUI(notes: List<Note>) {
         if (notes.isNotEmpty()) {
-            binding.cardView.visibility = View.GONE
+            binding.noNotesCardView.visibility = View.GONE
             binding.recyclerView.visibility = View.VISIBLE
         } else {
-            binding.cardView.visibility = View.VISIBLE
+            binding.noNotesCardView.visibility = View.VISIBLE
             binding.recyclerView.visibility = View.GONE
         }
     }
 
+    private var optionsMenu: Menu? = null
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         menu.clear()
-        
+        optionsMenu = menu
+
         val isSelectionMode = noteAdapter.isInSelectionMode()
         
         if (isSelectionMode) {
             inflater.inflate(R.menu.menu_home_selection, menu)
-            // Add Pin and Delete to selection menu if they are not already there
             if (menu.findItem(R.id.menu_pin) == null) {
                 inflater.inflate(R.menu.home_menu, menu)
                 menu.findItem(R.id.menu_search).isVisible = false
@@ -161,6 +152,18 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
             toggleItem.title = if (notesViewModel.spanCount.value == 2) "List View" else "Grid View"
         }
 
+        notesViewModel.sortOrder.value?.let { order ->
+            val itemId = when(order) {
+                SortOrder.DATE_CREATED_ASC -> R.id.sort_created_asc
+                SortOrder.DATE_CREATED_DESC -> R.id.sort_created_desc
+                SortOrder.DATE_UPDATED_ASC -> R.id.sort_updated_asc
+                SortOrder.DATE_UPDATED_DESC -> R.id.sort_updated_desc
+                SortOrder.TITLE_ASC -> R.id.sort_title_asc
+                SortOrder.TITLE_DESC -> R.id.sort_title_desc
+            }
+            menu.findItem(itemId)?.isChecked = true
+        }
+
         val mainActivity = activity as? MainActivity
         val toolbar = mainActivity?.binding?.toolbar
         if (isSelectionMode) {
@@ -174,7 +177,12 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
             toolbar?.setBackgroundColor(resources.getColor(R.color.selectionColor, null))
         } else {
             toolbar?.title = "Notes"
-            toolbar?.navigationIcon = null
+            toolbar?.setNavigationIcon(R.drawable.ic_note) // Or whatever icon for drawer
+            mainActivity?.drawerToggle?.let { toggle ->
+                toolbar?.setNavigationOnClickListener {
+                    mainActivity.binding.drawerLayout.openDrawer(androidx.core.view.GravityCompat.START)
+                }
+            }
             toolbar?.setBackgroundColor(resources.getColor(R.color.background_light, null))
         }
     }
@@ -217,6 +225,31 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
                 notesViewModel.toggleSpanCount()
                 return true
             }
+            R.id.sort_created_desc -> {
+                notesViewModel.setSortOrder(SortOrder.DATE_CREATED_DESC)
+                return true
+            }
+            R.id.sort_created_asc -> {
+                notesViewModel.setSortOrder(SortOrder.DATE_CREATED_ASC)
+                return true
+
+            }
+            R.id.sort_updated_desc -> {
+                notesViewModel.setSortOrder(SortOrder.DATE_UPDATED_DESC)
+                return true
+            }
+            R.id.sort_updated_asc -> {
+                notesViewModel.setSortOrder(SortOrder.DATE_UPDATED_ASC)
+                return true
+            }
+            R.id.sort_title_asc -> {
+                notesViewModel.setSortOrder(SortOrder.TITLE_ASC)
+                return true
+            }
+            R.id.sort_title_desc -> {
+                notesViewModel.setSortOrder(SortOrder.TITLE_DESC)
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -224,7 +257,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
     override fun onQueryTextChange(p0: String?): Boolean {
         notesViewModel.searchNotes(p0 ?: "")
         return true
-
     }
 
     override fun onQueryTextSubmit(p0: String?): Boolean {
@@ -237,7 +269,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
     }
 
     fun onSelectionChanged(){
-        requireActivity().invalidateOptionsMenu() //triggers onCreateOptionsMenu() again
+        requireActivity().invalidateOptionsMenu() 
     }
 
     private fun showUndoSnackbar(message: String, onUndo: () -> Unit) {
@@ -245,5 +277,4 @@ class HomeFragment : Fragment(R.layout.fragment_home), SearchView.OnQueryTextLis
             .setAction("Undo") { onUndo() }
             .show()
     }
-
 }

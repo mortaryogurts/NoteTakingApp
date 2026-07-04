@@ -67,4 +67,15 @@ class NoteRepository(private val db : NoteDatabase) {
         val cutoff = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000) // 30 days in ms
         db.getNoteDao().deleteOldTrashedNotes(cutoff)
     }
+
+    fun getNotesSortedByCreatedDesc(): LiveData<List<Note>> = db.getNoteDao().getNotesSortedByCreatedDesc()
+    fun getNotesSortedByCreatedAsc(): LiveData<List<Note>> = db.getNoteDao().getNotesSortedByCreatedAsc()
+
+    fun getNotesSortedByUpdatedDesc(): LiveData<List<Note>> = db.getNoteDao().getNotesSortedByUpdatedDesc()
+    fun getNotesSortedByUpdatedAsc(): LiveData<List<Note>> = db.getNoteDao().getNotesSortedByUpdatedAsc()
+
+    fun getNotesSortedByTitleAsc(): LiveData<List<Note>> = db.getNoteDao().getNotesSortedByTitleAsc()
+    fun getNotesSortedByTitleDesc(): LiveData<List<Note>> = db.getNoteDao().getNotesSortedByTitleDesc()
+
+    fun getNotesByCategory(categoryId: Int): LiveData<List<Note>> = db.getNoteDao().getNotesByCategory(categoryId)
 }
