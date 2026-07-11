@@ -32,7 +32,6 @@
                     android:id="@+id/etNoteTitleUpdate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-
                     android:layout_marginTop="8dp"
                     android:background="@android:color/transparent"
                     android:ems="10"
@@ -49,23 +48,43 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/tvCategory" />
 
-                <EditText
-                    android:id="@+id/etNoteBodyUpdate"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginRight="15dp"
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/noteScrollView"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    app:layout_constraintBottom_toTopOf="@+id/bottomToolbar"
+                    app:layout_constraintTop_toBottomOf="@+id/etNoteTitleUpdate">
+
+                    <LinearLayout
+                        android:id="@+id/blockContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+                </androidx.core.widget.NestedScrollView>
+
+                <LinearLayout
+                    android:id="@+id/bottomToolbar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
-                    android:gravity="start|top"
-                    android:hint="@string/type_something"
-                    android:inputType="textMultiLine"
-                    android:textColor="@color/black"
-                    android:textColorHint="@color/gray_medium"
-                    android:textSize="16sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/etNoteTitleUpdate" />
+                    android:background="@color/white"
+                    android:elevation="4dp"
+                    android:orientation="horizontal"
+                    android:padding="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent">
+
+                    <ImageButton
+                        android:id="@+id/btnAddImage"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Add Image"
+                        android:src="@drawable/ic_image" />
+
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvCategory"
@@ -88,13 +107,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="12dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="72dp"
                     android:backgroundTint="@color/gray_dark"
                     android:contentDescription="Save Note"
                     android:src="@drawable/ic_done"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.NoteTakingApp.FAB.Circle" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
 

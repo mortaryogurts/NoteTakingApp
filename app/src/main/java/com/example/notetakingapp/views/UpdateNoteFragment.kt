@@ -9,14 +9,22 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.children
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import coil.load
 import com.example.notetakingapp.R
 import com.example.notetakingapp.databinding.FragmentUpdateNoteBinding
 import com.example.notetakingapp.model.Categories
 import com.example.notetakingapp.model.Note
+import com.example.notetakingapp.model.NoteBlock
 import com.example.notetakingapp.viewmodel.CategoryViewModel
 import com.example.notetakingapp.viewmodel.NoteViewModel
 
@@ -32,6 +40,12 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
 
     private var selectedCategoryId : Int? = null
     private var currentCategories: List<Categories> = emptyList()
+
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            addImageBlock(uri.toString())
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +68,18 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
         currentNote = args.note!!
 
         binding.etNoteTitleUpdate.setText(currentNote.noteTitle)
-        binding.etNoteBodyUpdate.setText(currentNote.noteBody)
+        
+        // Render existing blocks
+        if (currentNote.noteBody.isEmpty()) {
+            addTextBlock("")
+        } else {
+            currentNote.noteBody.forEach { block ->
+                when (block) {
+                    is NoteBlock.Text -> addTextBlock(block.content)
+                    is NoteBlock.Image -> addImageBlock(block.contentUri)
+                }
+            }
+        }
         
         selectedCategoryId = currentNote.categoryId
         updateCategoryTextView()
@@ -68,6 +93,62 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
         binding.tvCategory.setOnClickListener {
             showCategoryPickerDialog()
         }
+
+        binding.btnAddImage.setOnClickListener {
+            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
+    }
+
+    private fun addTextBlock(content: String) {
+        val editText = EditText(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            hint = getString(R.string.type_something)
+            background = null
+            setText(content)
+        }
+        binding.blockContainer.addView(editText)
+    }
+
+    private fun addImageBlock(uri: String) {
+        val imageView = ImageView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                800
+            ).also { it.setMargins(0, 16, 0, 16) }
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            load(uri)
+            tag = uri
+        }
+        binding.blockContainer.addView(imageView)
+        // Only add a text block if the last block wasn't a text block
+        val lastChild = binding.blockContainer.getChildAt(binding.blockContainer.childCount - 1)
+        if (lastChild !is EditText) {
+            addTextBlock("")
+        }
+    }
+
+    private fun getNoteBlocks(): List<NoteBlock> {
+        val blocks = mutableListOf<NoteBlock>()
+        binding.blockContainer.children.forEach { view ->
+            when (view) {
+                is EditText -> {
+                    val text = view.text.toString().trim()
+                    if (text.isNotEmpty()) {
+                        blocks.add(NoteBlock.Text(text))
+                    }
+                }
+                is ImageView -> {
+                    val uri = view.tag as? String
+                    if (uri != null) {
+                        blocks.add(NoteBlock.Image(uri))
+                    }
+                }
+            }
+        }
+        return blocks
     }
 
     private fun updateCategoryTextView() {
@@ -105,12 +186,12 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
 
     private fun updateNote() {
         val title = binding.etNoteTitleUpdate.text.toString().trim()
-        val body = binding.etNoteBodyUpdate.text.toString().trim()
+        val blocks = getNoteBlocks()
         
         if (title.isNotEmpty()) {
             val note = currentNote.copy(
                 noteTitle = title, 
-                noteBody = body, 
+                noteBody = blocks,
                 categoryId = selectedCategoryId,
                 updatedAt = System.currentTimeMillis()
             )

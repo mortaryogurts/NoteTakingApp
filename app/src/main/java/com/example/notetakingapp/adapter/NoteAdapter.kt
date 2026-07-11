@@ -14,6 +14,7 @@ import com.example.notetakingapp.R
 import com.example.notetakingapp.views.HomeFragmentDirections
 import com.example.notetakingapp.databinding.NoteLayoutBinding
 import com.example.notetakingapp.model.Note
+import com.example.notetakingapp.model.NoteBlock
 import kotlin.random.Random
 
 
@@ -51,9 +52,7 @@ class NoteAdapter : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 //this checks whether the items have changed and only updates those items in the list which is better for the ui
     private val differCallback = object : DiffUtil.ItemCallback<Note>() {
         override fun areItemsTheSame(oldItem: Note, newItem: Note): Boolean {
-            return oldItem.id == newItem.id &&
-                    oldItem.noteBody == newItem.noteBody &&
-                    oldItem.noteTitle == newItem.noteTitle
+            return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(oldItem: Note, newItem: Note): Boolean {
@@ -80,7 +79,14 @@ class NoteAdapter : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
     ) {
         val currentNote = differ.currentList[position]
         holder.itemBinding.tvNoteTitle.text = currentNote.noteTitle
-        holder.itemBinding.tvNoteBody.text = currentNote.noteBody
+        
+        val bodySummary = currentNote.noteBody.joinToString(" ") { block ->
+            when (block) {
+                is NoteBlock.Text -> block.content
+                is NoteBlock.Image -> "[Image]"
+            }
+        }
+        holder.itemBinding.tvNoteBody.text = bodySummary
         if (currentNote.isPinned == true) {
             holder.itemBinding.isPinned.visibility = View.VISIBLE
         } else {

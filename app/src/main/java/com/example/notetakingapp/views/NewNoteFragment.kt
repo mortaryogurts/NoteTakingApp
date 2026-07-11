@@ -8,12 +8,20 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.LinearLayout
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.children
 import androidx.navigation.findNavController
+import coil.load
 import com.example.notetakingapp.R
 import com.example.notetakingapp.databinding.FragmentNewNoteBinding
 import com.example.notetakingapp.model.Categories
 import com.example.notetakingapp.model.Note
+import com.example.notetakingapp.model.NoteBlock
 import com.example.notetakingapp.viewmodel.CategoryViewModel
 import com.example.notetakingapp.viewmodel.NoteViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -29,6 +37,12 @@ class NewNoteFragment : Fragment(R.layout.fragment_new_note) {
 
     private var selectedCategoryId : Int? = null
     private var currentCategories : List<Categories> = emptyList()
+
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            addImageBlock(uri.toString())
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +64,7 @@ class NewNoteFragment : Fragment(R.layout.fragment_new_note) {
         mView = view
 
         observeCategories()
+        updateCategoryTextView()
 
         binding.fabSave.setOnClickListener {
             saveNote(mView)
@@ -58,9 +73,74 @@ class NewNoteFragment : Fragment(R.layout.fragment_new_note) {
             showCategoryDialog()
         }
 
+        binding.btnAddImage.setOnClickListener {
+            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
+
+        // Initialize with one text block
+        addTextBlock("")
+
         binding.tvCategory.text = "No Category"
     }
 
+    private fun addTextBlock(content: String) {
+        val editText = EditText(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            hint = getString(R.string.type_something)
+            background = null // transparent background
+            setText(content)
+        }
+        binding.blockContainer.addView(editText)
+        editText.requestFocus()
+    }
+
+    private fun addImageBlock(uri: String) {
+        val imageView = ImageView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                800 // height
+            ).also { it.setMargins(0, 16, 0, 16) }
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            load(uri)
+            tag = uri // Store URI in tag
+        }
+        binding.blockContainer.addView(imageView)
+        // Add another text block after the image
+        addTextBlock("")
+    }
+
+    private fun getNoteBlocks(): List<NoteBlock> {
+        val blocks = mutableListOf<NoteBlock>()
+        binding.blockContainer.children.forEach { view ->
+            when (view) {
+                is EditText -> {
+                    val text = view.text.toString().trim()
+                    if (text.isNotEmpty()) {
+                        blocks.add(NoteBlock.Text(text))
+                    }
+                }
+                is ImageView -> {
+                    val uri = view.tag as? String
+                    if (uri != null) {
+                        blocks.add(NoteBlock.Image(uri))
+                    }
+                }
+            }
+        }
+        return blocks
+    }
+
+    private fun updateCategoryTextView() {
+        if (selectedCategoryId == null) {
+            binding.tvCategory.text = "No Category"
+        } else {
+            val category = currentCategories.find { it.id == selectedCategoryId }
+            binding.tvCategory.text = category?.name ?: "Loading..."
+        }
+    }
     private fun observeCategories() {
         categoryViewmodel.allCategories.observe(viewLifecycleOwner) { categories ->
             currentCategories = categories
@@ -87,13 +167,13 @@ class NewNoteFragment : Fragment(R.layout.fragment_new_note) {
 
     private fun saveNote(view: View) {
         val noteTitle = binding.etNoteTitle.text.toString().trim()
-        val noteBody = binding.etNoteBody.text.toString().trim()
+        val noteBlocks = getNoteBlocks()
 
         if (noteTitle.isNotEmpty()) {
             val note = Note(
                 id = 0, 
                 noteTitle = noteTitle, 
-                noteBody = noteBody, 
+                noteBody = noteBlocks,
                 isPinned = false, 
                 isArchived = false,
                 categoryId = selectedCategoryId

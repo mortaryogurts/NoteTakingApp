@@ -8,9 +8,11 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.notetakingapp.model.Note
 import com.example.notetakingapp.model.Categories
+import androidx.room.TypeConverters
 import java.util.Locale
 
 @Database(entities = [Note::class, Categories::class], version = 6, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class NoteDatabase : RoomDatabase() {
     abstract fun getNoteDao(): NoteDAO
     abstract fun getCategoryDao() : CategoryDao

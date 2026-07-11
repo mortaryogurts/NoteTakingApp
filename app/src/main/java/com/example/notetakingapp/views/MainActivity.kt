@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity() {
                     .setIcon(R.drawable.ic_folder)
             }
 
-            menu.add(R.id.group_categories, R.id.nav_add_category, Menu.NONE, "+ New Category")
+            menu.add(R.id.group_categories, R.id.nav_add_category, Menu.NONE, "New Category")
                 .setIcon(R.drawable.ic_add)
         }
     }

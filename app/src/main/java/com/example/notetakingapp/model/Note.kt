@@ -22,7 +22,7 @@ data class Note(
     val id : Int,
     @ColumnInfo(defaultValue = "undefined")
     val noteTitle : String,
-    val noteBody : String,
+    val noteBody : List<NoteBlock>,
     val isPinned : Boolean,
     val isArchived : Boolean,
     val categoryId : Int? = null,

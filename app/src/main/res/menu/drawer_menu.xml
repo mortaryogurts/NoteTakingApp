@@ -18,10 +18,6 @@
             android:id="@+id/nav_trash"
             android:title="Trash"
             android:icon="@drawable/ic_trash"/>
-        <item
-            android:id="@+id/nav_add_category"
-            android:title="New Category"
-            app:showAsAction="never"/>
 
 
 

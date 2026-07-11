@@ -40,6 +40,8 @@ android {
 dependencies {
 
     implementation(libs.androidx.fragment)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.coil)
     //room-Database
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
