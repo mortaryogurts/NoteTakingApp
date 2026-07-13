@@ -12,6 +12,11 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.FrameLayout
+import android.view.Gravity
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,6 +48,12 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
+            try {
+                val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+            } catch (e: SecurityException) {
+                e.printStackTrace()
+            }
             addImageBlock(uri.toString())
         }
     }
@@ -113,16 +124,48 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
     }
 
     private fun addImageBlock(uri: String) {
-        val imageView = ImageView(requireContext()).apply {
+        val context = requireContext()
+        val container = FrameLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 800
             ).also { it.setMargins(0, 16, 0, 16) }
-            scaleType = ImageView.ScaleType.CENTER_CROP
-            load(uri)
             tag = uri
         }
-        binding.blockContainer.addView(imageView)
+
+        val imageView = ImageView(context).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            load(uri)
+        }
+        container.addView(imageView)
+
+        val deleteButton = ImageView(context).apply {
+            val size = (36 * resources.displayMetrics.density).toInt()
+            val padding = (6 * resources.displayMetrics.density).toInt()
+            layoutParams = FrameLayout.LayoutParams(size, size).apply {
+                gravity = Gravity.TOP or Gravity.END
+                setMargins(0, (8 * resources.displayMetrics.density).toInt(), (8 * resources.displayMetrics.density).toInt(), 0)
+            }
+            setPadding(padding, padding, padding, padding)
+            setImageResource(android.R.drawable.ic_menu_close_clear_cancel)
+            val shape = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(Color.parseColor("#80000000"))
+            }
+            background = shape
+            setColorFilter(Color.WHITE)
+            setOnClickListener {
+                binding.blockContainer.removeView(container)
+            }
+        }
+        container.addView(deleteButton)
+
+        binding.blockContainer.addView(container)
+
         // Only add a text block if the last block wasn't a text block
         val lastChild = binding.blockContainer.getChildAt(binding.blockContainer.childCount - 1)
         if (lastChild !is EditText) {
@@ -138,6 +181,12 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
                     val text = view.text.toString().trim()
                     if (text.isNotEmpty()) {
                         blocks.add(NoteBlock.Text(text))
+                    }
+                }
+                is FrameLayout -> {
+                    val uri = view.tag as? String
+                    if (uri != null) {
+                        blocks.add(NoteBlock.Image(uri))
                     }
                 }
                 is ImageView -> {
